@@ -64,15 +64,26 @@ def filter_dataframe(df: pd.DataFrame, rules: dict | None = None) -> pd.DataFram
     # 构建过滤条件
     cond = pd.Series(True, index=df_copy.index)
 
-    # 销量过滤
-    if "近7天销量值" in df_copy.columns and "sales" in r and "last_7d_min" in r["sales"]:
+    # 销量过滤 - 优先使用_num列
+    if "近7天销量_num" in df_copy.columns and "sales" in r and "last_7d_min" in r["sales"]:
+        cond &= df_copy["近7天销量_num"] >= r["sales"]["last_7d_min"]
+    elif "近7天销量值" in df_copy.columns and "sales" in r and "last_7d_min" in r["sales"]:
         cond &= df_copy["近7天销量值"] >= r["sales"]["last_7d_min"]
 
-    if "近30天销量值" in df_copy.columns and "sales" in r and "last_30d_min" in r["sales"]:
+    if "近30天销量_num" in df_copy.columns and "sales" in r and "last_30d_min" in r["sales"]:
+        cond &= df_copy["近30天销量_num"] >= r["sales"]["last_30d_min"]
+    elif "近30天销量值" in df_copy.columns and "sales" in r and "last_30d_min" in r["sales"]:
         cond &= df_copy["近30天销量值"] >= r["sales"]["last_30d_min"]
 
-    # 佣金和转化率过滤
-    if "佣金比例值" in df_copy.columns and "commission" in r:
+    # 佣金和转化率过滤 - 优先使用_num列
+    if "佣金比例_num" in df_copy.columns and "commission" in r:
+        if "min_rate" in r["commission"] and "转化率_num" in df_copy.columns and "zero_rate_conversion_min" in r["commission"]:
+            # 佣金率高于最低要求 或 零佣金但转化率高
+            cond &= (
+                (df_copy["佣金比例_num"] >= r["commission"]["min_rate"]) |
+                ((df_copy["佣金比例_num"] == 0) & (df_copy["转化率_num"] >= r["commission"]["zero_rate_conversion_min"]))
+            )
+    elif "佣金比例值" in df_copy.columns and "commission" in r:
         if "min_rate" in r["commission"] and "转化率值" in df_copy.columns and "zero_rate_conversion_min" in r["commission"]:
             # 佣金率高于最低要求 或 零佣金但转化率高
             cond &= (
@@ -80,8 +91,10 @@ def filter_dataframe(df: pd.DataFrame, rules: dict | None = None) -> pd.DataFram
                 ((df_copy["佣金比例值"] == 0) & (df_copy["转化率值"] >= r["commission"]["zero_rate_conversion_min"]))
             )
 
-    # 转化率过滤
-    if "转化率值" in df_copy.columns and "conversion" in r and "min_rate" in r["conversion"]:
+    # 转化率过滤 - 优先使用_num列
+    if "转化率_num" in df_copy.columns and "conversion" in r and "min_rate" in r["conversion"]:
+        cond &= df_copy["转化率_num"] >= r["conversion"]["min_rate"]
+    elif "转化率值" in df_copy.columns and "conversion" in r and "min_rate" in r["conversion"]:
         cond &= df_copy["转化率值"] >= r["conversion"]["min_rate"]
 
     # KOL数量过滤

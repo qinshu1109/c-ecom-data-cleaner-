@@ -31,6 +31,9 @@ st.markdown("---")
 from douyin_ecom_analyzer.cleaning.converters import range_mid, commission_to_float, conversion_to_float
 from douyin_ecom_analyzer.cleaning.filter_engine import filter_dataframe
 
+# 从ecom_cleaner导入数据转换函数
+from ecom_cleaner.cleaning.converters import parse_sales_to_float, parse_percent_to_float
+
 def clean_dataframe(df):
     """
     数据清洗函数
@@ -47,20 +50,28 @@ def clean_dataframe(df):
     if '近7天销量' in df_clean.columns:
         df_clean['近7天销量_清洗'] = df_clean['近7天销量'].astype(str).apply(range_mid)
         df_clean['近7天销量值'] = df_clean['近7天销量_清洗']
+        # 添加用于比较的数值列
+        df_clean['近7天销量_num'] = df_clean['近7天销量'].apply(parse_sales_to_float).astype(float)
 
     if '近30天销量' in df_clean.columns:
         df_clean['近30天销量_清洗'] = df_clean['近30天销量'].astype(str).apply(range_mid)
         df_clean['近30天销量值'] = df_clean['近30天销量_清洗']
+        # 添加用于比较的数值列
+        df_clean['近30天销量_num'] = df_clean['近30天销量'].apply(parse_sales_to_float).astype(float)
 
     # 处理佣金数据
     if '佣金比例' in df_clean.columns:
         df_clean['佣金比例_清洗'] = df_clean['佣金比例'].astype(str).apply(commission_to_float)
         df_clean['佣金比例值'] = df_clean['佣金比例_清洗']
+        # 添加用于比较的数值列
+        df_clean['佣金比例_num'] = df_clean['佣金比例'].apply(parse_percent_to_float).astype(float)
 
     # 处理转化率
     if '转化率' in df_clean.columns:
         df_clean['转化率_清洗'] = df_clean['转化率'].astype(str).apply(conversion_to_float)
         df_clean['转化率值'] = df_clean['转化率_清洗']
+        # 添加用于比较的数值列
+        df_clean['转化率_num'] = df_clean['转化率'].apply(parse_percent_to_float).astype(float)
 
     # 确保关联达人列存在
     if '关联达人' in df_clean.columns:
@@ -77,6 +88,21 @@ def clean_dataframe(df):
         df_clean['price'] = 100.0  # 默认价格
 
     return df_clean
+
+def generate_excel_report(df: pd.DataFrame) -> bytes:
+    """生成Excel报告并返回字节数据
+
+    Args:
+        df: 要导出的DataFrame
+
+    Returns:
+        bytes: Excel文件的字节数据
+    """
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='清洗后数据')
+    buf.seek(0)
+    return buf.getvalue()
 
 def main():
     """主函数"""
@@ -215,14 +241,12 @@ def main():
                     st.dataframe(top50, height=600)
 
                     # 提供下载
-                    towrite = io.BytesIO()
-                    top50.to_excel(towrite, index=False, engine="openpyxl")
-                    towrite.seek(0)
-
+                    report_bytes = generate_excel_report(top50)
                     st.download_button(
                         "📥 下载 Top商品",
-                        data=towrite.getvalue(),
+                        data=report_bytes,
                         file_name="top_products.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         key="dl-top50"
                     )
 

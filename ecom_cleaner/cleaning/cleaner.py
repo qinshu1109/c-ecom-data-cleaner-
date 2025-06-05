@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Optional, Union
 from concurrent.futures import ThreadPoolExecutor
-from .converters import range_to_mean, percent_to_float, validate_url
+from .converters import range_to_mean, percent_to_float, validate_url, parse_sales_to_float, parse_percent_to_float
 
 
 class DataCleaner:
@@ -38,30 +38,42 @@ class DataCleaner:
         """
         # 创建副本避免修改原始数据
         df_clean = df.copy()
-        
+
         # 并行处理各个字段
         with ThreadPoolExecutor() as executor:
             # 清洗销量字段
             for field in self.sales_fields:
                 if field in df_clean.columns:
+                    # 原始清洗逻辑保持不变
                     df_clean[field] = executor.submit(
                         self._clean_sales_field, df_clean[field]
                     ).result()
-            
+                    # 添加新的数值列，用于比较
+                    new_field = f"{field}_num"
+                    df_clean[new_field] = executor.submit(
+                        self._clean_sales_field_for_comparison, df_clean[field]
+                    ).result()
+
             # 清洗百分比字段
             for field in self.percent_fields:
                 if field in df_clean.columns:
+                    # 原始清洗逻辑保持不变
                     df_clean[field] = executor.submit(
                         self._clean_percent_field, df_clean[field]
                     ).result()
-            
+                    # 添加新的数值列，用于比较
+                    new_field = f"{field}_num"
+                    df_clean[new_field] = executor.submit(
+                        self._clean_percent_field_for_comparison, df_clean[field]
+                    ).result()
+
             # 清洗URL字段
             for field in self.url_fields:
                 if field in df_clean.columns:
                     df_clean[field] = executor.submit(
                         self._clean_url_field, df_clean[field]
                     ).result()
-        
+
         return df_clean
 
     def _clean_sales_field(self, series: pd.Series) -> pd.Series:
@@ -78,6 +90,18 @@ class DataCleaner:
             lambda x: range_to_mean(x) if pd.notna(x) else np.nan
         )
 
+    def _clean_sales_field_for_comparison(self, series: pd.Series) -> pd.Series:
+        """
+        清洗销量字段，转换为浮点数用于比较。
+
+        Args:
+            series: 销量数据序列
+
+        Returns:
+            pd.Series: 清洗后的销量数据，转换为浮点数
+        """
+        return series.apply(parse_sales_to_float).astype(float)
+
     def _clean_percent_field(self, series: pd.Series) -> pd.Series:
         """
         清洗百分比字段。
@@ -92,6 +116,18 @@ class DataCleaner:
             lambda x: percent_to_float(x) if pd.notna(x) else np.nan
         )
 
+    def _clean_percent_field_for_comparison(self, series: pd.Series) -> pd.Series:
+        """
+        清洗百分比字段，转换为浮点数用于比较。
+
+        Args:
+            series: 百分比数据序列
+
+        Returns:
+            pd.Series: 清洗后的百分比数据，转换为浮点数
+        """
+        return series.apply(parse_percent_to_float).astype(float)
+
     def _clean_url_field(self, series: pd.Series) -> pd.Series:
         """
         清洗URL字段。
@@ -102,8 +138,11 @@ class DataCleaner:
         Returns:
             pd.Series: 清洗后的URL数据
         """
+        # 去空格+校验https开头，必要时补https://
+        series = series.fillna('').str.strip()
+        series = series.apply(lambda x: x if x.startswith('http') else f'https://{x}' if x else x)
         return series.apply(
-            lambda x: validate_url(x) if pd.notna(x) else np.nan
+            lambda x: validate_url(x) if pd.notna(x) and x else np.nan
         )
 
     def get_cleaning_stats(self, df: pd.DataFrame) -> Dict:
@@ -121,7 +160,7 @@ class DataCleaner:
             "cleaned_fields": {},
             "anomalies": {}
         }
-        
+
         # 统计销量字段
         for field in self.sales_fields:
             if field in df.columns:
@@ -131,7 +170,7 @@ class DataCleaner:
                     "mean": df[field].mean(),
                     "std": df[field].std()
                 }
-        
+
         # 统计百分比字段
         for field in self.percent_fields:
             if field in df.columns:
@@ -141,7 +180,7 @@ class DataCleaner:
                     "mean": df[field].mean(),
                     "std": df[field].std()
                 }
-        
+
         # 统计URL字段
         for field in self.url_fields:
             if field in df.columns:
@@ -150,5 +189,5 @@ class DataCleaner:
                     "null_count": df[field].isna().sum(),
                     "valid_urls": df[field].notna().sum()
                 }
-        
-        return stats 
+
+        return stats
