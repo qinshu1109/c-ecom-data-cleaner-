@@ -1,0 +1,19 @@
+sales:
+  last_7d_min: 5000
+  last_30d_min: 25000
+commission:
+  min_rate: 0.20
+  zero_rate_conversion_min: 0.20
+conversion:
+  min_rate: 0.15
+influencer:
+  min_count: 50
+categories:
+  whitelist:
+    - 端午文创
+    - 艾草挂饰
+    - 儿童节礼盒
+    - 库洛米
+    - HelloKitty
+    - 高复购烟具
+    - 过滤烟嘴 

@@ -49,6 +49,17 @@ def parse_args():
         help='样例数据行数 (仅sample模式需要)'
     )
     
+    parser.add_argument(
+        '--apply-filters',
+        action='store_true',
+        help='应用filter_rules.yaml中的过滤规则'
+    )
+    
+    parser.add_argument(
+        '--rules',
+        help='自定义过滤规则文件路径'
+    )
+    
     return parser.parse_args()
 
 def main():
@@ -74,6 +85,13 @@ def main():
                 args.input_file,
                 '--output', args.output
             ]
+            
+            # 添加过滤参数
+            if args.apply_filters:
+                sys.argv.append('--apply-filters')
+            
+            if args.rules:
+                sys.argv.extend(['--rules', args.rules])
             
             return cli_main()
             
