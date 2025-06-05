@@ -9,7 +9,7 @@ conversion:
 influencer:
   min_count: 50
 categories:
-  whitelist:
+  blacklist:
     - 端午文创
     - 艾草挂饰
     - 儿童节礼盒
