@@ -8,10 +8,6 @@ import logging
 import time
 import yaml
 
-# 导入项目模块
-from cleaning.converters import range_mid, commission_to_float, conversion_to_float
-from cleaning.filter_engine import filter_dataframe, load_rules
-
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
@@ -30,6 +26,10 @@ st.set_page_config(
 # 应用标题
 st.title("抖音电商数据分析工具")
 st.markdown("---")
+
+# 导入项目模块 - 放在页面配置后面
+from cleaning.converters import range_mid, commission_to_float, conversion_to_float
+from cleaning.filter_engine import filter_dataframe, load_rules
 
 def clean_dataframe(df, cfg=None):
     """
@@ -73,6 +73,9 @@ def clean_dataframe(df, cfg=None):
         if df_clean['价格'].dtype == 'object':
             df_clean['价格'] = pd.to_numeric(df_clean['价格'], errors='coerce').fillna(0)
         df_clean['price'] = df_clean['价格']
+    elif 'price' not in df_clean.columns:
+        # 如果没有价格列，添加默认价格列
+        df_clean['price'] = 100.0  # 默认价格
     
     return df_clean
 
@@ -170,45 +173,68 @@ def main():
                 
                 # 应用过滤规则
                 status.info("正在应用过滤规则...")
-                df_filt = filter_dataframe(df_clean, rules_gui)
-                progress.progress(50)
-                
-                # 计算价值分数
-                status.info("正在计算商品价值分数...")
-                df_filt["value_score"] = (
-                    df_filt["近30天销量值"] * df_filt["佣金比例值"] * df_filt["price"]
-                )
-                
-                # 选择Top50
-                top50 = df_filt.nlargest(50, "value_score").reset_index(drop=True)
-                progress.progress(75)
-                
-                # 显示过滤结果
-                st.header("4. 过滤结果")
-                st.write(f"原始数据量: {len(df_raw)}行")
-                st.write(f"清洗后数据量: {len(df_clean)}行")
-                st.write(f"过滤后数据量: {len(df_filt)}行")
-                st.write(f"过滤率: {(1 - len(df_filt) / len(df_clean)) * 100:.2f}%")
-                
-                # 显示Top50
-                st.header("5. Top 50 高价值商品")
-                st.dataframe(top50, height=600)
-                
-                # 提供下载
-                towrite = io.BytesIO()
-                top50.to_excel(towrite, index=False, engine="openpyxl")
-                towrite.seek(0)
-                
-                st.download_button(
-                    "📥 下载 Top50", 
-                    data=towrite.getvalue(),
-                    file_name="top50.xlsx", 
-                    key="dl-top50"
-                )
-                
-                # 完成
-                progress.progress(100)
-                status.success(f"处理完成！总耗时: {time.time() - start_time:.2f}秒")
+                try:
+                    df_filt = filter_dataframe(df_clean, rules_gui)
+                    progress.progress(50)
+                    
+                    # 检查是否有过滤结果
+                    if len(df_filt) == 0:
+                        st.warning("⚠️ 过滤后没有符合条件的数据，请尝试调整过滤规则")
+                        # 显示过滤结果统计
+                        st.header("4. 过滤结果")
+                        st.write(f"原始数据量: {len(df_raw)}行")
+                        st.write(f"清洗后数据量: {len(df_clean)}行")
+                        st.write(f"过滤后数据量: 0行")
+                        st.write(f"过滤率: 100%")
+                        return
+                    
+                    # 计算价值分数
+                    status.info("正在计算商品价值分数...")
+                    # 确保所有用于计算的列都是数值类型
+                    df_filt["近30天销量值"] = pd.to_numeric(df_filt["近30天销量值"], errors='coerce').fillna(0)
+                    df_filt["佣金比例值"] = pd.to_numeric(df_filt["佣金比例值"], errors='coerce').fillna(0)
+                    df_filt["price"] = pd.to_numeric(df_filt["price"], errors='coerce').fillna(0)
+                    
+                    df_filt["value_score"] = (
+                        df_filt["近30天销量值"] * df_filt["佣金比例值"] * df_filt["price"]
+                    )
+                    
+                    # 选择Top50
+                    top_count = min(50, len(df_filt))  # 防止数据不足50条
+                    top50 = df_filt.nlargest(top_count, "value_score").reset_index(drop=True)
+                    progress.progress(75)
+                    
+                    # 显示过滤结果
+                    st.header("4. 过滤结果")
+                    st.write(f"原始数据量: {len(df_raw)}行")
+                    st.write(f"清洗后数据量: {len(df_clean)}行")
+                    st.write(f"过滤后数据量: {len(df_filt)}行")
+                    st.write(f"过滤率: {(1 - len(df_filt) / len(df_clean)) * 100:.2f}%")
+                    
+                    # 显示Top50
+                    st.header(f"5. Top {top_count} 高价值商品")
+                    st.dataframe(top50, height=600)
+                    
+                    # 提供下载
+                    towrite = io.BytesIO()
+                    top50.to_excel(towrite, index=False, engine="openpyxl")
+                    towrite.seek(0)
+                    
+                    st.download_button(
+                        f"📥 下载 Top{top_count}", 
+                        data=towrite.getvalue(),
+                        file_name="top_products.xlsx", 
+                        key="dl-top50"
+                    )
+                    
+                    # 完成
+                    progress.progress(100)
+                    status.success(f"处理完成！总耗时: {time.time() - start_time:.2f}秒")
+                    
+                except Exception as e:
+                    st.error(f"应用过滤规则时发生错误: {str(e)}")
+                    logger.exception("过滤错误")
+                    status.error("处理过程中出现错误，请检查数据格式或联系技术支持")
                 
         except Exception as e:
             st.error(f"处理过程中发生错误: {str(e)}")
