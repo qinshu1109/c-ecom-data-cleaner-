@@ -1,0 +1,84 @@
+# 数据字段配置
+sales_fields:
+  - 近30天销量
+  - 周销量
+  - 近1年销量
+  - 近30天销售额
+  - 直播销售额
+  - 商品卡销售额
+
+percent_fields:
+  - 佣金比例
+  - 转化率
+  - 30天转化率
+  - 直播转化率
+  - 商品卡转化率
+
+url_fields:
+  - 商品链接
+  - 蝉妈妈商品链接
+  - 抖音商品链接
+  - 商品头图链接
+
+# 清洗规则配置
+cleaning_rules:
+  sales_range:
+    enabled: true
+    unit_conversion:
+      w: 10000
+      k: 1000
+    default_value: 0
+
+  percentage:
+    enabled: true
+    decimal_places: 4
+    default_value: 0.0
+
+  url_validation:
+    enabled: true
+    allowed_domains:
+      - douyin.com
+      - chanmama.com
+    default_value: ""
+
+# 分析配置
+analysis:
+  sales_metrics:
+    - 近30天销量
+    - 近30天销售额
+    - 直播销售额
+    - 商品卡销售额
+
+  conversion_metrics:
+    - 转化率
+    - 30天转化率
+    - 直播转化率
+    - 商品卡转化率
+
+  visualization:
+    default_chart_type: "histogram"
+    chart_colors:
+      - "#1f77b4"
+      - "#ff7f0e"
+      - "#2ca02c"
+      - "#d62728"
+
+# 输出配置
+output:
+  excel:
+    sheets:
+      - name: "清洗后数据"
+        type: "data"
+      - name: "销量分析"
+        type: "analysis"
+      - name: "转化率分析"
+        type: "analysis"
+      - name: "异常值检测"
+        type: "analysis"
+
+  visualization:
+    format: "png"
+    dpi: 300
+    size:
+      width: 12
+      height: 8 
