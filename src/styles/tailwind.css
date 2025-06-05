@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #3FB0FF;
+    --primary-gradient: linear-gradient(135deg, #3FB0FF 0%, #38C5FF 100%);
+    --text: #1C1E21;
+    --background: #F2F4F8;
+  }
+  
+  body {
+    @apply bg-background text-text font-sans;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-2 rounded-2xl hover:opacity-90 transition-opacity;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.07)] p-6;
+  }
+  
+  .stat-card {
+    @apply card flex flex-col items-center justify-center;
+  }
+}
+
+/* Flatpickr 自定义样式 */
+.flatpickr-calendar {
+  @apply rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.07)] !important;
+}
+
+/* DaisyUI Range 滑块样式 */
+.range::-webkit-slider-thumb {
+  @apply bg-primary !important;
+} 

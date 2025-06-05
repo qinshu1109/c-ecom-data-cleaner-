@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抖音电商数据清洗工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="styles/tailwind.css" rel="stylesheet">
+</head>
+<body class="min-h-screen">
+    <!-- Hero Section -->
+    <section class="container mx-auto px-4 py-12">
+        <div class="flex items-center justify-between">
+            <div class="max-w-xl">
+                <h1 class="text-4xl font-bold mb-4">抖音电商数据清洗工具</h1>
+                <p class="text-lg mb-8">一键完成数据清洗、统计分析和可视化，让运营工作更高效</p>
+                <button class="btn-primary">上传文件</button>
+            </div>
+            <div class="w-1/2">
+                <!-- 这里放置 SVG 插画 -->
+                <svg class="w-full h-auto" viewBox="0 0 400 300">
+                    <!-- 示例 SVG 内容 -->
+                    <rect x="50" y="50" width="300" height="200" fill="var(--primary)" opacity="0.1"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pb-12">
+        <div class="flex gap-6">
+            <!-- Main Area -->
+            <div class="flex-1">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-3 gap-6 mb-6">
+                    <div class="stat-card">
+                        <h3 class="text-lg font-medium mb-2">商品总数</h3>
+                        <p class="text-2xl font-bold text-primary">1,234</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 class="text-lg font-medium mb-2">平均价格</h3>
+                        <p class="text-2xl font-bold text-primary">¥299</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 class="text-lg font-medium mb-2">总销量</h3>
+                        <p class="text-2xl font-bold text-primary">50,000+</p>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="card">
+                    <div class="overflow-x-auto">
+                        <table class="table w-full">
+                            <thead>
+                                <tr>
+                                    <th>商品名称</th>
+                                    <th>价格</th>
+                                    <th>销量</th>
+                                    <th>佣金比例</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 示例数据行 -->
+                                <tr>
+                                    <td>示例商品1</td>
+                                    <td>¥299</td>
+                                    <td>1,234</td>
+                                    <td>20%</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">查看</button>
+                                    </td>
+                                </tr>
+                                <!-- 更多数据行... -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Panel -->
+            <div class="w-80">
+                <div class="card sticky top-6">
+                    <h2 class="text-xl font-bold mb-4">筛选条件</h2>
+                    
+                    <!-- 价格区间 -->
+                    <div class="mb-6">
+                        <label class="label">价格区间</label>
+                        <input type="range" min="0" max="1000" class="range range-primary" />
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span>¥0</span>
+                            <span>¥1000</span>
+                        </div>
+                    </div>
+
+                    <!-- 多选下拉 -->
+                    <div class="mb-6">
+                        <label class="label">商品分类</label>
+                        <select multiple class="select select-bordered w-full">
+                            <option>服装</option>
+                            <option>美妆</option>
+                            <option>数码</option>
+                            <option>食品</option>
+                        </select>
+                    </div>
+
+                    <!-- 日期区间 -->
+                    <div class="mb-6">
+                        <label class="label">日期范围</label>
+                        <input type="text" class="input input-bordered w-full" placeholder="选择日期范围" id="dateRange">
+                    </div>
+
+                    <button class="btn btn-primary w-full">应用筛选</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="text-gray-500">
+                    © 2024 抖音电商数据清洗工具
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="https://github.com/your-repo" class="text-gray-500 hover:text-primary">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                    <span class="text-gray-500">Made with Tailwind</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <script>
+        // 初始化日期选择器
+        flatpickr("#dateRange", {
+            mode: "range",
+            locale: "zh",
+            dateFormat: "Y-m-d",
+            defaultDate: ["2024-01-01", "2024-12-31"]
+        });
+    </script>
+</body>
+</html> 

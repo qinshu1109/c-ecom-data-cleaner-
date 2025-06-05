@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -15,15 +16,20 @@ lib64/
 parts/
 sdist/
 var/
-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 
-# Virtual Environment
+# 项目特定
+output/
+*.xlsx
+*.csv
+*.png
+*.log
+
+# 虚拟环境
 venv/
 ENV/
-env/
 
 # IDE
 .idea/
@@ -31,10 +37,9 @@ env/
 *.swp
 *.swo
 
-# Project specific
-.promptx/
-.cursor/
-bin/
-include/
-lib64/
-pyvenv.cfg 
+# 系统
+.DS_Store
+Thumbs.db
+
+# New rules
+*.pyc 

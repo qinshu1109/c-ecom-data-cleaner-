@@ -1,0 +1,174 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+## 一、Bug 分类
+
+### 1. 严重程度（Severity）
+```yaml
+severity_levels:
+  S0: "系统崩溃，无法运行"
+  S1: "核心功能不可用"
+  S2: "功能部分可用，但有严重问题"
+  S3: "功能可用，但有明显问题"
+  S4: "小问题，不影响使用"
+```
+
+### 2. 优先级（Priority）
+```yaml
+priority_levels:
+  P0: "立即修复"
+  P1: "24小时内修复"
+  P2: "本周内修复"
+  P3: "下个迭代修复"
+  P4: "计划修复"
+```
+
+### 3. Bug 类型
+```yaml
+bug_types:
+  data_cleaning:
+    - "销量数据清洗错误"
+    - "佣金比例转换错误"
+    - "URL 验证失败"
+  
+  performance:
+    - "处理超时（>3分钟）"
+    - "内存溢出"
+    - "CPU 使用率过高"
+  
+  ui:
+    - "界面显示异常"
+    - "交互响应延迟"
+    - "样式错乱"
+  
+  data_export:
+    - "Excel 导出失败"
+    - "数据格式错误"
+    - "图表生成失败"
+```
+
+## 二、处理流程
+
+### 1. Bug 报告模板
+```markdown
+## Bug 描述
+- 标题：[简短描述]
+- 环境：[操作系统/浏览器/版本]
+- 复现步骤：[1,2,3...]
+- 预期结果：[期望行为]
+- 实际结果：[实际行为]
+- 截图：[如有]
+
+## 技术信息
+- 错误日志：[相关日志]
+- 堆栈跟踪：[如有]
+- 相关代码：[代码片段]
+
+## 分类信息
+- 严重程度：[S0-S4]
+- 优先级：[P0-P4]
+- 类型：[data_cleaning/performance/ui/data_export]
+```
+
+### 2. 处理流程
+```mermaid
+flowchart LR
+    A[发现Bug] --> B[分类与分级]
+    B --> C{是否可复现?}
+    C -->|是| D[分配处理人]
+    C -->|否| E[收集更多信息]
+    D --> F[修复]
+    F --> G[验证]
+    G --> H[关闭]
+```
+
+### 3. 响应时间要求
+```yaml
+response_time:
+  S0: "15分钟内响应"
+  S1: "1小时内响应"
+  S2: "4小时内响应"
+  S3: "24小时内响应"
+  S4: "48小时内响应"
+```
+
+### 4. 修复时间要求
+```yaml
+fix_time:
+  P0: "4小时内修复"
+  P1: "24小时内修复"
+  P2: "72小时内修复"
+  P3: "下一迭代修复"
+  P4: "计划修复"
+```
+
+## 三、常见问题处理
+
+### 1. 数据清洗问题
+```python
+def handle_data_cleaning_bug(bug_info: dict) -> str:
+    """
+    处理数据清洗相关bug
+    - 检查数据格式
+    - 验证清洗规则
+    - 确认转换逻辑
+    """
+    # 实现逻辑
+```
+
+### 2. 性能问题
+```python
+def handle_performance_bug(bug_info: dict) -> str:
+    """
+    处理性能相关bug
+    - 分析处理时间
+    - 检查内存使用
+    - 优化算法
+    """
+    # 实现逻辑
+```
+
+### 3. UI 问题
+```python
+def handle_ui_bug(bug_info: dict) -> str:
+    """
+    处理UI相关bug
+    - 检查响应式布局
+    - 验证交互逻辑
+    - 确认样式规则
+    """
+    # 实现逻辑
+```
+
+## 四、Bug 追踪
+
+### 1. 状态流转
+```yaml
+bug_states:
+  - new: "新建"
+  - assigned: "已分配"
+  - in_progress: "处理中"
+  - fixed: "已修复"
+  - verified: "已验证"
+  - closed: "已关闭"
+  - reopened: "重新打开"
+```
+
+### 2. 统计指标
+```yaml
+metrics:
+  - mttr: "平均修复时间"
+  - mttf: "平均故障时间"
+  - bug_distribution: "Bug分布统计"
+  - resolution_rate: "解决率"
+```
+
+### 3. 定期回顾
+```yaml
+review_cycle:
+  - daily: "每日Bug同步"
+  - weekly: "周度Bug分析"
+  - monthly: "月度质量报告"
+```

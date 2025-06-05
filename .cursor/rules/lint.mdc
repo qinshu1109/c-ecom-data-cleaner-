@@ -1,0 +1,77 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## 一、代码风格规范
+
+### 1. 命名规范
+- 类名：使用 `PascalCase`
+- 函数/变量：使用 `snake_case`
+- 常量：使用 `UPPER_SNAKE_CASE`
+- 私有成员：使用 `_snake_case` 前缀
+
+### 2. 代码格式
+- 缩进：4个空格
+- 行长度：最大88字符
+- 空行：函数/类之间2行，方法之间1行
+- 导入顺序：
+  1. 标准库
+  2. 第三方库
+  3. 本地模块
+
+### 3. 注释规范
+- 文档字符串：使用 Google 风格
+- 行内注释：使用 `#` 后跟空格
+- 复杂逻辑：必须添加注释说明
+
+### 4. 类型注解
+- 所有函数参数必须标注类型
+- 所有函数返回值必须标注类型
+- 复杂数据结构使用 `typing` 模块
+
+### 5. 代码检查工具
+```yaml
+# 使用以下工具进行检查
+- black: 代码格式化
+- isort: 导入排序
+- flake8: 代码风格检查
+- mypy: 类型检查
+- pylint: 代码质量检查
+```
+
+### 6. 检查规则
+```yaml
+# flake8 配置
+max-line-length: 88
+exclude: .git,__pycache__,build,dist
+ignore: E203, W503
+
+# mypy 配置
+disallow_untyped_defs: true
+disallow_incomplete_defs: true
+check_untyped_defs: true
+disallow_untyped_decorators: true
+no_implicit_optional: true
+warn_redundant_casts: true
+warn_unused_ignores: true
+warn_return_any: true
+warn_unreachable: true
+```
+
+### 7. 提交前检查
+```bash
+# 提交前必须运行
+black .
+isort .
+flake8
+mypy .
+pylint **/*.py
+```
+
+### 8. 常见问题
+- 避免使用 `*` 导入
+- 避免使用全局变量
+- 避免使用 `eval()` 和 `exec()`
+- 避免使用 `assert` 进行业务逻辑判断
+- 避免使用 `print` 进行调试
