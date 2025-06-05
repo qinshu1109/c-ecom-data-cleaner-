@@ -1,0 +1,35 @@
+{
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": false,
+    "python.linting.mypyEnabled": false,
+    "python.formatting.provider": "none",
+    
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true,
+        "source.organizeImports": true
+    },
+    
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": true,
+            "source.organizeImports": true
+        }
+    },
+    
+    "ruff.enable": true,
+    "ruff.format.args": [],
+    "ruff.lint.run": "onSave",
+    "ruff.organizeImports": true,
+    
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.autoSearchPaths": true,
+    
+    "editor.rulers": [100],
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true
+} 
