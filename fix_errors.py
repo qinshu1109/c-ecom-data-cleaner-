@@ -113,11 +113,11 @@ def update_pandas_settings():
         for i, line in enumerate(content):
             if "import pandas as pd" in line:
                 # 检查是否已有配置
-                if i+1 < len(content) and "pd.options.io.excel.writer" in content[i+1]:
+                if i+1 < len(content) and "pd.set_option('io.excel.xlsx.writer', 'openpyxl')" in content[i+1]:
                     print("Pandas配置已存在")
                     break
 
-                content.insert(i+1, "# 设置Excel写入器为openpyxl\npd.options.io.excel.writer = 'openpyxl'\n")
+                content.insert(i+1, "# 设置Excel引擎为openpyxl\npd.set_option('io.excel.xlsx.writer', 'openpyxl')\n")
                 with open(app_file, "w", encoding="utf-8") as f:
                     f.writelines(content)
                 print("已添加Pandas Excel配置")

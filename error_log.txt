@@ -1,0 +1,32 @@
+# 抖音电商数据分析工具 - 错误日志
+# 记录时间: 2024-07-12
+
+## Pylance 错误
+文件: douyin_ecom_analyzer/analyzer.py
+
+1. 无法访问类"DouyinAnalyzer*"的属性"category_counts"
+   行号: 268-269
+   错误详情: 属性"category_counts"未知
+   错误类型: Instance of 'DouyinAnalyzer' has no 'category_counts' member
+
+2. 无法访问类"DouyinAnalyzer*"的属性"commission_pivot"
+   行号: 272-273
+   错误详情: 属性"commission_pivot"未知
+   错误类型: Instance of 'DouyinAnalyzer' has no 'commission_pivot' member
+
+3. 无法访问类"DouyinAnalyzer*"的属性"conversion_counts"
+   行号: 276-277
+   错误详情: 属性"conversion_counts"未知
+   错误类型: Instance of 'DouyinAnalyzer' has no 'conversion_counts' member
+
+## 修复措施
+在 DouyinAnalyzer 类的 __init__ 方法中添加了缺失的属性初始化：
+```python
+# 初始化分析结果属性
+self.category_counts = None
+self.commission_pivot = None
+self.conversion_counts = None
+```
+
+## 修复结果
+所有 Pylance 错误已解决。这些属性现在在类初始化时被正确声明。

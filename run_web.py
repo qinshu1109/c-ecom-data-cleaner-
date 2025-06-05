@@ -2,11 +2,10 @@
 """
 抖音电商数据分析工具 - Web界面启动脚本
 """
-import os
 import logging
+import os
 import sys
 from pathlib import Path
-import subprocess
 
 # 创建logs目录
 logs_dir = Path("logs")
@@ -35,27 +34,19 @@ if __name__ == "__main__":
     print("正在启动抖音电商数据分析工具 Web界面...")
     print(f"日志将保存到: {log_file} 和 {error_log}")
 
-    # 使用streamlit运行，指定端口为8080
-    cmd = [sys.executable, '-m', 'streamlit', 'run',
-           app_path,
-           '--server.port', '8080',
-           '--server.address', '0.0.0.0']
-
     try:
         # 解决matplotlib中文字体问题
         import matplotlib
         matplotlib.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial Unicode MS', 'sans-serif']
         matplotlib.rcParams['axes.unicode_minus'] = False
 
-        # 修复Excel保存问题
+        # 导入pandas
         import pandas as pd
-        pd.options.io.excel.writer = "openpyxl"
 
         # 启动应用
         import streamlit.web.cli as stcli
-        import sys
 
-        sys.argv = ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+        sys.argv = ["streamlit", "run", "douyin_ecom_analyzer/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
         sys.exit(stcli.main())
     except Exception as e:
         logging.exception("启动失败")
