@@ -2,6 +2,7 @@
 """
 抖音电商数据分析工具 - Web界面启动脚本
 """
+
 import logging
 import os
 import sys
@@ -15,11 +16,8 @@ logs_dir.mkdir(exist_ok=True)
 log_file = logs_dir / "app_error.log"
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(log_file, encoding='utf-8'),
-        logging.StreamHandler(sys.stdout)
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler(log_file, encoding="utf-8"), logging.StreamHandler(sys.stdout)],
 )
 
 # 将标准错误也重定向到文件
@@ -29,7 +27,7 @@ sys.stderr = open(error_log, "w", encoding="utf-8")
 if __name__ == "__main__":
     # 获取app.py的绝对路径
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    app_path = os.path.join(current_dir, 'douyin_ecom_analyzer', 'app.py')
+    app_path = os.path.join(current_dir, "douyin_ecom_analyzer", "app.py")
 
     print("正在启动抖音电商数据分析工具 Web界面...")
     print(f"日志将保存到: {log_file} 和 {error_log}")
@@ -37,16 +35,27 @@ if __name__ == "__main__":
     try:
         # 解决matplotlib中文字体问题
         import matplotlib
-        matplotlib.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial Unicode MS', 'sans-serif']
-        matplotlib.rcParams['axes.unicode_minus'] = False
+
+        matplotlib.rcParams["font.sans-serif"] = [
+            "SimHei",
+            "DejaVu Sans",
+            "Arial Unicode MS",
+            "sans-serif",
+        ]
+        matplotlib.rcParams["axes.unicode_minus"] = False
 
         # 导入pandas
-        import pandas as pd
 
         # 启动应用
         import streamlit.web.cli as stcli
 
-        sys.argv = ["streamlit", "run", "douyin_ecom_analyzer/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+        sys.argv = [
+            "streamlit",
+            "run",
+            "douyin_ecom_analyzer/app.py",
+            "--server.port=8501",
+            "--server.address=0.0.0.0",
+        ]
         sys.exit(stcli.main())
     except Exception as e:
         logging.exception("启动失败")

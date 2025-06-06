@@ -1,63 +1,86 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
+import base64
+import logging
 import os
 import time
-import logging
-import base64
-from io import BytesIO
 from datetime import datetime
+from io import BytesIO
 
-# 导入项目模块 - 修改为完整包路径
-from douyin_ecom_analyzer.utils import clean_dataframe
+import pandas as pd
+import streamlit as st
+
 from douyin_ecom_analyzer.analyzer import DouyinAnalyzer
 from douyin_ecom_analyzer.filter_engine import FilterEngine
 
+# 导入项目模块 - 修改为完整包路径
+from douyin_ecom_analyzer.utils import clean_dataframe
+
 # 配置日志
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-logger = logging.getLogger('douyin_app')
+logger = logging.getLogger("douyin_app")
 
 # 设置页面配置
 st.set_page_config(
     page_title="抖音电商数据分析工具",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 # 应用标题
 st.title("抖音电商数据分析工具")
 st.markdown("---")
 
-def get_file_download_link(file_path, link_text):
-    """生成文件下载链接"""
-    with open(file_path, 'rb') as f:
-        data = f.read()
+
+def get_file_download_link(file_path_or_buffer, link_text):
+    """
+    生成文件下载链接，支持文件路径或BytesIO对象
+
+    Args:
+        file_path_or_buffer: 文件路径或BytesIO对象
+        link_text: 链接文本
+
+    Returns:
+        str: HTML格式的下载链接
+    """
+    if isinstance(file_path_or_buffer, BytesIO):
+        # 如果是BytesIO对象，直接读取内容
+        file_path_or_buffer.seek(0)
+        data = file_path_or_buffer.getvalue()
+        filename = "report.xlsx"  # 默认文件名
+    else:
+        # 如果是文件路径，打开并读取内容
+        with open(file_path_or_buffer, "rb") as f:
+            data = f.read()
+        filename = os.path.basename(file_path_or_buffer)
+
+    # 编码为base64
     b64 = base64.b64encode(data).decode()
-    filename = os.path.basename(file_path)
     return f'<a href="data:application/octet-stream;base64,{b64}" download="{filename}">{link_text}</a>'
 
-def get_excel_download_link(df, filename, sheet_name='Sheet1'):
+
+def get_excel_download_link(df, filename, sheet_name="Sheet1"):
     """生成Excel文件下载链接"""
     output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='openpyxl')
+    writer = pd.ExcelWriter(output, engine="openpyxl")
     df.to_excel(writer, sheet_name=sheet_name, index=False)
     writer.close()
     b64 = base64.b64encode(output.getvalue()).decode()
     return f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">{filename}</a>'
 
+
 def main():
     """主函数"""
     # 侧边栏配置
     st.sidebar.header("配置")
-    skip_url_check = st.sidebar.checkbox("跳过URL有效性检查", value=True,
-                                        help="启用此选项可加快处理速度，但会跳过链接验证")
+    skip_url_check = st.sidebar.checkbox(
+        "跳过URL有效性检查", value=True, help="启用此选项可加快处理速度，但会跳过链接验证"
+    )
 
-    apply_filters = st.sidebar.checkbox("应用过滤规则", value=False,
-                                       help="启用此选项将根据filter_rules.yaml中的规则过滤数据")
+    apply_filters = st.sidebar.checkbox(
+        "应用过滤规则", value=False, help="启用此选项将根据filter_rules.yaml中的规则过滤数据"
+    )
 
     output_dir = "output"
     os.makedirs(output_dir, exist_ok=True)
@@ -143,40 +166,47 @@ def main():
             col1, col2 = st.columns(2)
 
             # 销量分析
-            if results['sales'] and 'plot_path' in results['sales']:
+            if results["sales"] and "plot_path" in results["sales"]:
                 with col1:
                     st.subheader("销量分析")
-                    st.image(results['sales']['plot_path'])
+                    st.image(results["sales"]["plot_path"])
 
             # 佣金分析
-            if results['commission'] and 'plot_path' in results['commission']:
+            if results["commission"] and "plot_path" in results["commission"]:
                 with col2:
                     st.subheader("佣金分析")
-                    st.image(results['commission']['plot_path'])
+                    st.image(results["commission"]["plot_path"])
 
             # 相关性分析
-            if results['correlation'] and 'plot_path' in results['correlation']:
+            if results["correlation"] and "plot_path" in results["correlation"]:
                 st.subheader("相关性分析")
-                st.image(results['correlation']['plot_path'])
+                st.image(results["correlation"]["plot_path"])
 
             # URL有效性分析
-            if results['url_validation'] and 'plot_path' in results['url_validation']:
+            if results["url_validation"] and "plot_path" in results["url_validation"]:
                 st.subheader("URL有效性分析")
-                st.image(results['url_validation']['plot_path'])
+                st.image(results["url_validation"]["plot_path"])
 
             # 下载报告
             download_header = "6. 下载报告" if apply_filters else "5. 下载报告"
             st.header(download_header)
 
-            excel_report = results.get('excel_report')
+            excel_report = results.get("excel_report")
             if excel_report:
-                st.markdown(get_file_download_link(excel_report, "下载Excel报表"), unsafe_allow_html=True)
+                st.markdown(
+                    get_file_download_link(excel_report, "下载Excel报表"), unsafe_allow_html=True
+                )
 
                 # 如果应用了过滤规则，生成过滤报告
                 if apply_filters and filter_stats:
-                    filter_report_path = os.path.join(output_dir, f'filter_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.md')
+                    filter_report_path = os.path.join(
+                        output_dir, f"filter_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+                    )
                     filter_engine.generate_filter_report(filter_stats, filter_report_path)
-                    st.markdown(get_file_download_link(filter_report_path, "下载过滤报告"), unsafe_allow_html=True)
+                    st.markdown(
+                        get_file_download_link(filter_report_path, "下载过滤报告"),
+                        unsafe_allow_html=True,
+                    )
 
                 progress_container.text("处理完成!")
                 progress_bar.progress(100)
@@ -213,6 +243,7 @@ def main():
         | 商品链接 | 抖音商品页 | `https://haohuo.douyin.com/...` | 需校验可访问 |
         | 蝉妈妈商品链接 | 第三方分析页 | `https://www.chanmama.com/...` | 选填 |
         """)
+
 
 if __name__ == "__main__":
     main()
