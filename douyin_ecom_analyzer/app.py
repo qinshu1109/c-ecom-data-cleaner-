@@ -12,7 +12,7 @@ from douyin_ecom_analyzer.analyzer import DouyinAnalyzer
 from douyin_ecom_analyzer.filter_engine import FilterEngine
 
 # 导入项目模块 - 修改为完整包路径
-from douyin_ecom_analyzer.utils import clean_dataframe
+from ecom_cleaner.cleaning.cleaner import DataCleaner
 
 # 配置日志
 logging.basicConfig(
@@ -79,7 +79,7 @@ def main():
     )
 
     apply_filters = st.sidebar.checkbox(
-        "应用过滤规则", value=False, help="启用此选项将根据filter_rules.yaml中的规则过滤数据"
+        "应用过滤规则", value=True, help="启用此选项将根据规则过滤数据"
     )
 
     output_dir = "output"
@@ -109,7 +109,11 @@ def main():
             # 数据清洗
             progress_container.text("正在清洗数据...")
             start_time = time.time()
-            cleaned_df = clean_dataframe(df)
+
+            # 使用新的DataCleaner清洗数据
+            cleaner = DataCleaner()
+            cleaned_df = cleaner.clean(df)
+
             cleaning_time = time.time() - start_time
             progress_bar.progress(40)
             info.info(f"数据清洗完成，耗时: {cleaning_time:.2f}秒")
@@ -193,9 +197,13 @@ def main():
 
             excel_report = results.get("excel_report")
             if excel_report:
-                st.markdown(
-                    get_file_download_link(excel_report, "下载Excel报表"), unsafe_allow_html=True
-                )
+                try:
+                    # 确保excel_report是正确处理的
+                    download_link = get_file_download_link(excel_report, "下载Excel报表")
+                    st.markdown(download_link, unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"生成下载链接时出错: {str(e)}")
+                    logger.exception("生成下载链接错误")
 
                 # 如果应用了过滤规则，生成过滤报告
                 if apply_filters and filter_stats:

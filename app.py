@@ -1,26 +1,23 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
 import io
-import os
-from pathlib import Path
 import logging
 import time
+
+import pandas as pd
+import streamlit as st
 import yaml
 
 # 配置日志
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-logger = logging.getLogger('douyin_app')
+logger = logging.getLogger("douyin_app")
 
 # 设置页面配置
 st.set_page_config(
     page_title="抖音电商数据分析工具",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 # 应用标题
@@ -28,8 +25,9 @@ st.title("抖音电商数据分析工具")
 st.markdown("---")
 
 # 导入项目模块 - 放在页面配置后面
-from cleaning.converters import range_mid, commission_to_float, conversion_to_float
-from cleaning.filter_engine import filter_dataframe, load_rules
+from cleaning.converters import commission_to_float, conversion_to_float, range_mid
+from cleaning.filter_engine import filter_dataframe
+
 
 def clean_dataframe(df, cfg=None):
     """
@@ -45,39 +43,40 @@ def clean_dataframe(df, cfg=None):
     df_clean = df.copy()
 
     # 处理销量数据
-    if '近7天销量' in df_clean.columns:
-        df_clean['近7天销量_清洗'] = df_clean['近7天销量'].astype(str).apply(range_mid)
-        df_clean['近7天销量值'] = df_clean['近7天销量_清洗']
+    if "近7天销量" in df_clean.columns:
+        df_clean["近7天销量_清洗"] = df_clean["近7天销量"].astype(str).apply(range_mid)
+        df_clean["近7天销量值"] = df_clean["近7天销量_清洗"]
 
-    if '近30天销量' in df_clean.columns:
-        df_clean['近30天销量_清洗'] = df_clean['近30天销量'].astype(str).apply(range_mid)
-        df_clean['近30天销量值'] = df_clean['近30天销量_清洗']
+    if "近30天销量" in df_clean.columns:
+        df_clean["近30天销量_清洗"] = df_clean["近30天销量"].astype(str).apply(range_mid)
+        df_clean["近30天销量值"] = df_clean["近30天销量_清洗"]
 
     # 处理佣金数据
-    if '佣金比例' in df_clean.columns:
-        df_clean['佣金比例_清洗'] = df_clean['佣金比例'].astype(str).apply(commission_to_float)
-        df_clean['佣金比例值'] = df_clean['佣金比例_清洗']
+    if "佣金比例" in df_clean.columns:
+        df_clean["佣金比例_清洗"] = df_clean["佣金比例"].astype(str).apply(commission_to_float)
+        df_clean["佣金比例值"] = df_clean["佣金比例_清洗"]
 
     # 处理转化率
-    if '转化率' in df_clean.columns:
-        df_clean['转化率_清洗'] = df_clean['转化率'].astype(str).apply(conversion_to_float)
-        df_clean['转化率值'] = df_clean['转化率_清洗']
+    if "转化率" in df_clean.columns:
+        df_clean["转化率_清洗"] = df_clean["转化率"].astype(str).apply(conversion_to_float)
+        df_clean["转化率值"] = df_clean["转化率_清洗"]
 
     # 确保关联达人列存在
-    if '关联达人' in df_clean.columns:
-        if df_clean['关联达人'].dtype == 'object':
-            df_clean['关联达人'] = pd.to_numeric(df_clean['关联达人'], errors='coerce').fillna(0)
+    if "关联达人" in df_clean.columns:
+        if df_clean["关联达人"].dtype == "object":
+            df_clean["关联达人"] = pd.to_numeric(df_clean["关联达人"], errors="coerce").fillna(0)
 
     # 确保价格列存在
-    if '价格' in df_clean.columns:
-        if df_clean['价格'].dtype == 'object':
-            df_clean['价格'] = pd.to_numeric(df_clean['价格'], errors='coerce').fillna(0)
-        df_clean['price'] = df_clean['价格']
-    elif 'price' not in df_clean.columns:
+    if "价格" in df_clean.columns:
+        if df_clean["价格"].dtype == "object":
+            df_clean["价格"] = pd.to_numeric(df_clean["价格"], errors="coerce").fillna(0)
+        df_clean["price"] = df_clean["价格"]
+    elif "price" not in df_clean.columns:
         # 如果没有价格列，添加默认价格列
-        df_clean['price'] = 100.0  # 默认价格
+        df_clean["price"] = 100.0  # 默认价格
 
     return df_clean
+
 
 def main():
     """主函数"""
@@ -97,8 +96,12 @@ def main():
         last_30d_min = st.sidebar.slider("30天最低销量", 10000, 50000, 25000, 1000)
 
         # 佣金阈值
-        min_commission_rate = st.sidebar.slider("最低佣金比例", 0.05, 0.5, 0.20, 0.01, format="%.2f")
-        zero_rate_min_conversion = st.sidebar.slider("零佣金最低转化率", 0.05, 0.5, 0.20, 0.01, format="%.2f")
+        min_commission_rate = st.sidebar.slider(
+            "最低佣金比例", 0.05, 0.5, 0.20, 0.01, format="%.2f"
+        )
+        zero_rate_min_conversion = st.sidebar.slider(
+            "零佣金最低转化率", 0.05, 0.5, 0.20, 0.01, format="%.2f"
+        )
 
         # 转化率阈值
         min_conversion_rate = st.sidebar.slider("最低转化率", 0.05, 0.5, 0.15, 0.01, format="%.2f")
@@ -112,33 +115,31 @@ def main():
                 default_rules = yaml.safe_load(f)
                 default_blacklist = default_rules.get("categories", {}).get("blacklist", [])
         except:
-            default_blacklist = ["端午文创", "艾草挂饰", "儿童节礼盒", "库洛米", "HelloKitty", "高复购烟具", "过滤烟嘴"]
+            default_blacklist = [
+                "端午文创",
+                "艾草挂饰",
+                "儿童节礼盒",
+                "库洛米",
+                "HelloKitty",
+                "高复购烟具",
+                "过滤烟嘴",
+            ]
 
         blacklist_input = st.sidebar.text_area(
-            "类别黑名单（每行一个）",
-            value="\n".join(default_blacklist)
+            "类别黑名单（每行一个）", value="\n".join(default_blacklist)
         )
         blacklist = [item.strip() for item in blacklist_input.split("\n") if item.strip()]
 
         # 构建自定义规则
         rules_gui = {
-            "sales": {
-                "last_7d_min": last_7d_min,
-                "last_30d_min": last_30d_min
-            },
+            "sales": {"last_7d_min": last_7d_min, "last_30d_min": last_30d_min},
             "commission": {
                 "min_rate": min_commission_rate,
-                "zero_rate_conversion_min": zero_rate_min_conversion
+                "zero_rate_conversion_min": zero_rate_min_conversion,
             },
-            "conversion": {
-                "min_rate": min_conversion_rate
-            },
-            "influencer": {
-                "min_count": min_influencer_count
-            },
-            "categories": {
-                "blacklist": blacklist
-            }
+            "conversion": {"min_rate": min_conversion_rate},
+            "influencer": {"min_count": min_influencer_count},
+            "categories": {"blacklist": blacklist},
         }
 
     # 上传文件部分
@@ -184,16 +185,20 @@ def main():
                         st.header("4. 过滤结果")
                         st.write(f"原始数据量: {len(df_raw)}行")
                         st.write(f"清洗后数据量: {len(df_clean)}行")
-                        st.write(f"过滤后数据量: 0行")
-                        st.write(f"过滤率: 100%")
+                        st.write("过滤后数据量: 0行")
+                        st.write("过滤率: 100%")
                         return
 
                     # 计算价值分数
                     status.info("正在计算商品价值分数...")
                     # 确保所有用于计算的列都是数值类型
-                    df_filt["近30天销量值"] = pd.to_numeric(df_filt["近30天销量值"], errors='coerce').fillna(0)
-                    df_filt["佣金比例值"] = pd.to_numeric(df_filt["佣金比例值"], errors='coerce').fillna(0)
-                    df_filt["price"] = pd.to_numeric(df_filt["price"], errors='coerce').fillna(0)
+                    df_filt["近30天销量值"] = pd.to_numeric(
+                        df_filt["近30天销量值"], errors="coerce"
+                    ).fillna(0)
+                    df_filt["佣金比例值"] = pd.to_numeric(
+                        df_filt["佣金比例值"], errors="coerce"
+                    ).fillna(0)
+                    df_filt["price"] = pd.to_numeric(df_filt["price"], errors="coerce").fillna(0)
 
                     df_filt["value_score"] = (
                         df_filt["近30天销量值"] * df_filt["佣金比例值"] * df_filt["price"]
@@ -224,7 +229,7 @@ def main():
                         f"📥 下载 Top{top_count}",
                         data=towrite.getvalue(),
                         file_name="top_products.xlsx",
-                        key="dl-top50"
+                        key="dl-top50",
                     )
 
                     # 完成
@@ -263,6 +268,7 @@ def main():
         | 商品名称 | 商品名称 | - | 用于类别过滤 |
         | 商品链接 | 抖音商品页 | `https://haohuo.douyin.com/...` | - |
         """)
+
 
 if __name__ == "__main__":
     main()
